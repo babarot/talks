@@ -1,0 +1,62 @@
+Go graceful shutdown - Examples of introduction to Production
+Go 1.8 Release Party in Tokyo
+16 Feb 2017
+Tags: golang, graceful, hot-deploy
+
+Masaki ISHIYAMA
+Mercari, Inc
+# b4b4r07 gmail.com
+http://tellme.tokyo/
+@b4b4r07
+
+* Profile
+
+.image img/icon.jpg 200 _
+
+- [[https://github.com/b4b4r07][*@b4b4r07*]], a.k.a. BABAROT
+- *'15/4*: Go で CLI ツールなどを書きはじめる
+- *'16/4*: 新卒一期としてメルカリにジョイン
+-          サーバサイドエンジニア (PHP)
+- *'16/8*: SRE 研修 (1ヶ月) にて API Gateway を書く (Go)
+
+* Softwares in Go
+
+CLI ツールなど．
+
+- [[https://github.com/b4b4r07/zsh-history][zsh-history]] - A plugin for zsh history extended by golang, dealing it like SQL
+- [[https://github.com/b4b4r07/gomi][gomi]] - A simple trash tool that works on CLI, written in golang
+- [[https://github.com/b4b4r07/twistd][twistd]] - Twitter Streaming daemon
+- [[https://github.com/search?utf8=%E2%9C%93&q=user%3Ab4b4r07+language%3Ago+-bot&type=Repositories&ref=searchresults][*-bot]] - Slack bot
+- etc...
+
+ブログなども書いてるのでよかったら見てみてください．
+
+* Go graceful shutdown - Examples of introduction to Production
+
+* Timeline
+
+- SRE 研修，メンター [[https://github.com/kazeburo][@kazeburo]] さん
+- 研修の中盤ごろから Go 製の API Gateway を触る
+- サービスインの二歩手前 (このときは，[[https://revel.github.io/][Revel]] を使用)
+- 本格稼働に向けてホットデプロイ対応させたい
+- [[https://github.com/lestrrat/go-server-starter][lestrrat/go-server-starter]] を使う
+- ついでに WAF を使わずに `net/http` で書き直す
+- Go 1.8 で Graceful shutdown がサポートされる ([[https://github.com/golang/go/issues/4674][#4674]])
+
+* API Gateway
+
+* Hot-deploying
+
+* lestrrat/go-server-starter
+
+* Go graceful shutdown
+
+* Finaly,
+
+このことをエンジニアブログにまとめています．
+
+.image img/blog.png 400 _
+
+[[http://tech.mercari.com/entry/2016/12/19/180000][http://tech.mercari.com/entry/2016/12/19/180000]]
+
+* まとめ
