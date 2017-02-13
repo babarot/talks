@@ -1,0 +1,326 @@
+Hot-deploying in Go
+
+Go 1.8 Release Party in Tokyo
+16 Feb 2017
+#Tags: golang, graceful, hot-deploy
+
+Masaki ISHIYAMA
+Mercari, Inc
+# b4b4r07 gmail.com
+http://tellme.tokyo/
+@b4b4r07
+
+* Profile
+
+.image img/icon.jpg 200 _
+
+- [[https://github.com/b4b4r07][*@b4b4r07*]], a.k.a. BABAROT
+- *'15/4*: Go で CLI ツールなどを書きはじめる
+- *'16/4*: 新卒一期としてメルカリにジョイン
+-          サーバサイドエンジニア (PHP)
+- *'16/8*: SRE 研修 (1ヶ月) にて API Gateway を書く (Go)
+
+* Softwares in Go
+
+CLI ツールなど．
+
+- [[https://github.com/b4b4r07/zsh-history][zsh-history]] - A plugin for zsh history extended by golang, dealing it like SQL
+- [[https://github.com/b4b4r07/gomi][gomi]] - A simple trash tool that works on CLI, written in golang
+- [[https://github.com/b4b4r07/twistd][twistd]] - Twitter Streaming daemon
+- [[https://github.com/search?utf8=%E2%9C%93&q=user%3Ab4b4r07+language%3Ago+-bot&type=Repositories&ref=searchresults][*-bot]] - Slack bot
+- etc...
+
+ブログなども書いてるのでよかったら見てみてください．
+
+🆕 [[http://www.tellme.tokyo/entry/2017/02/14/214231][golang で zsh history を SQL 的に活用する - tellme.tokyo]]
+
+* Hot-deploying in Go - プロダクションでの実例
+
+* Timeline
+
+- SRE 研修，メンター [[https://github.com/kazeburo][@kazeburo]] さん
+- 研修の中盤ごろから Go 製の API Gateway を触る
+- サービスインの二歩手前 (このときは，[[https://revel.github.io/][Revel]] を使用)
+- 本格稼働に向けてホットデプロイ対応させたい
+- [[https://github.com/lestrrat/go-server-starter][lestrrat/go-server-starter]] を使う
+- ついでに WAF を使わずに `net/http` で書き直す
+- Go 1.8 で Graceful shutdown がサポートされる ([[https://github.com/golang/go/issues/4674][#4674]])
+
+* Dolphin
+
+* Dolphin
+
+Dolphin (API Gateway) とは，
+
+- 便宜上，イルカと呼ぶ🐬
+- Revel で書かれていた
+- 別の新卒 (同様に SRE 研修) によってつくられた
+- そのまま引き継ぎ，BASIC 認証機能やクエリのチューニングを加えた
+- そして，デプロイ ... 🚀
+- あたらしい機能 P-R したけど，アレ...
+
+(Revel って Graceful restart できるの...?)
+
+* Dolphin
+
+Revel...
+
+- [[https://github.com/revel/revel/pull/690][Support zero downtime restarts #690]]
+- [[https://github.com/revel/revel/pull/765][Revert "Support zero downtime restarts" #765]]
+
+(今となってはできるよう)
+
+* Dolphin
+
+まず，
+
+- メインサービスの API から呼ばれる関係上，ホットデプロイできるようにしたい
+- 要件的に Revel ほど高機能な WAF は必要なかった
+- `net/http` で同機能のモックアップ作ってベンチを取ったら倍になってた
+
+以下のベンチマーク結果: (ローカルマシンで計測)
+
+    $ ab -n 10000 -c 1
+
+.image img/benchmark.png 150 _
+
+あとは，ホットデプロイ対応...
+
+* Hot-deploying
+
+* Hot-deploying
+
+# Hot-deployable services are those which can be added to or removed from the running server.
+# It is the ability to change ON-THE-FLY what's currently deployed without redeploying it.
+
+ホットデプロイとは，
+
+- *デプロイ* - App の変更を各本番サーバに展開すること
+- 通常はサーバの停止と再起動をともなう
+- その間，リクエストを取りこぼしてしまう
+- リロードのみで変更を取り込む技術，デプロイ方法
+- => いわゆるこれを *ホットデプロイ* という
+- つまり，リクエストの処理を続けながらプログラムの入れ替えが可能
+
+* Hot-deploying
+
+有名なものに `Server::Starter` ([[https://github.com/kazuho/p5-Server-Starter][kazuho/p5-Server-Starter]])
+
+    $ start_server --port=8080 --pid-file=app.pid -- ./dolphin
+
+- `port`: バインドするポート
+- `pid-file`: start_server の PID
+
+    $ ab -n 10000 -c 100 http://127.0.0.1:8080/
+
+リクエストを送る
+
+    $ kill -HUP $(cat app.pid)
+
+HUP シグナルを送るとリロードされる
+
+ただし， `start_server` を使ってホットデプロイを実現するには，
+`Server::Starter` に対応したプログラムを書く必要がある
+
+* Hot-deploying
+
+仕組み，
+
+- App サーバ起動
+- 上位プロセスがソケットを生成
+- ソケットを共有するプロセスを fork し HTTP リクエスト用の子プロセスを fork
+- 変更点をデプロイ (バイナリの入れ替え) して HUP シグナルを送信する
+- シグナルを受け取ったサーバはそのソケットを共有する別のプロセス郡を fork する．このプロセスが新しいアプリケーションコードを反映したプロセスで，HTTP リクエストを処理していく
+- 古いままのプロセスを止めるためにシグナルを送る
+- 古いプロセスが (graceful に) 終了する
+
+* Hot-deploying
+
+.image img/fork.png 500 _
+
+.caption [[http://blog.shibayu36.org/entry/2012/05/07/201556][Server::Starterから学ぶhot deployの仕組み]]
+
+* lestrrat/go-server-starter
+
+* lestrrat/go-server-starter
+
+[[https://github.com/lestrrat/go-server-starter][lestrrat/go-server-starter]]
+
+- `Server::Starter` の Go 移植版 (ライブラリ)
+- Go 実装の `start_server` コマンドも同梱
+
+.image img/starter.png 350 _
+
+* lestrrat/go-server-starter
+
+まずは， `start_server` のインストール
+
+    $ go get github.com/lestrrat/go-server-starter/cmd/start_server
+
+あとは go-server-starter に対応したプログラムを書いていく．
+
+* lestrrat/go-server-starter
+
+    import "github.com/lestrrat/go-server-starter/listener"
+
+指定ポートで `[]net.Listener` を順々にリッスンしていく
+
+以下，App 側のコード (スペース上，err 処理省略)
+
+_dolphin.go_
+
+#.code src/server.go /^	if/,/^		l,/
+
+.code src/server-1.go
+
+* lestrrat/go-server-starter
+
+環境変数 `SERVER_STARTER_PORT` にポートと FD が入っている
+
+`port=fd;port=fd` 形式
+
+    $ echo $SERVER_STARTER_PORT
+    8080=3
+
+以下，やってること:
+
+_go-server-starter/listener/listener.go_
+
+- `SERVER_STARTER_PORT` をパースして port と fd に分ける
+- 上位プロセスから渡ってきた fd で `os.NewFile` が `*File` を作る
+- その `*File` を `net.FileListener` でリッスンする
+
+* lestrrat/go-server-starter
+
+イルカさん，対応した 🐬
+
+.image img/kazeburo.png 400 _
+
+listener を組み込んで， `start_server` で起動するようになっている
+
+* BTW,
+
+ホットデプロイ対応のついでに WAF をやめた話は以下にまとめています．
+
+.image img/blog.png 400 _
+
+.caption [[http://tech.mercari.com/entry/2016/12/19/180000][http://tech.mercari.com/entry/2016/12/19/180000]]
+
+* Go graceful shutdown
+
+* Go graceful shutdown
+
+# go-server-starter だけでは Graceful shutdown を実現できない．
+
+ここでいう Graceful shutdown とは，
+
+HTTP サーバにおいて，
+張られたソケットをいきなり切ってサーバを終了するのではなく
+すでに accept されているソケットに対する処理を終えてから終了すること
+
+# _停止が指示されて以降はクライアントからの新たなリクエストは受け付けず，_
+# _ただし受信済みのリクエストの処理は完了してレスポンスを返し終了する機能_
+
+* Go graceful shutdown
+
+*~* *Go* *1.7* まで．
+
+Graceful の機能だけを提供するサードパーティ
+
+- [[https://github.com/braintree/manners][braintree/manners]]
+- [[https://github.com/tylerb/graceful][tylerb/graceful]]
+- [[https://github.com/shogo82148/go-gracedown][shogo82148/go-gracedown]]
+- etc...
+
+Go 1.3 の [[http://golang-jp.org/pkg/net/http/#ConnState][ConnState]] を使って実現している模様
+
+go-gracedown は旧来の I/F から Go 1.8 の実装を使うらしい．
+
+もしくは 1.7 以下のユーザはそのまま利用できる
+
+.caption [[https://twitter.com/shogo82148/status/810852586697801728][https://twitter.com/shogo82148/status/810852586697801728]]
+
+* Go graceful shutdown
+
+*Go* *1.8*
+
+`net/http`
+
+- `Server.Close`
+- `Server.Shutdown` (Graceful)
+
+標準機能という強み
+
+既存コードをちょっと書き換えるだけで対応することができる
+
+    func (srv *Server) Shutdown(ctx context.Context) error
+
+* Go graceful shutdown
+
+手を入れる箇所としてはそんなに多くない
+
+.code src/graceful.go /^	server/,/^}/
+
+* Go graceful shutdown
+
+実際のプロダクトで，
+
+`Server.Shutdown` と go-server-starter を利用するパッチ
+
+- [[https://github.com/mercari/gaurun/pull/57][Support graceful shutdown and hot-deploying #57]]
+- [[https://github.com/mercari/widebullet/pull/10][Support hot-deploying (with graceful shutdown) #10]]
+
+* Go graceful shutdown
+
+自分でもミニマルなスクリプト書いてベンチ取ってみた．
+
+    $ start_server --port=8080 --pid-file=/tmp/app.pid -- ./server
+    --
+    $ while :; do kill -HUP $(cat /tmp/app.pid); sleep 1; done
+    --
+    $ ab -n 10000 -c 100 http://127.0.0.1:8080/
+
+結果，
+
+    Complete requests:      10000
+    Failed requests:        0
+
+🤔
+
+* Go graceful shutdown
+
+Go 製 HTTP load ツール [[https://github.com/rakyll/hey][rakyll/hey]]，
+
+# ab をリプレースした CLI なので馴染みやすい
+
+    $ start_server --port=8080 --pid-file=/tmp/app.pid -- ./server
+    --
+    $ kill -TERM $(cat /tmp/app.pid)
+    --
+    $ hey -n 3000 -c 100 http://localhost:8000
+
+結果，
+
+    Summary:
+      Total:        13.6336 secs
+      Slowest:      0.1093 secs
+      Fastest:      0.1004 secs
+      Average:      0.1049 secs
+      Requests/sec: 168.7006
+    Status code distribution:
+      [200] 2300 responses
+    Error distribution:
+      [700]        Get http://localhost:8000: dial tcp [::1]:8000: getsockopt: connection refused
+
+新規のリクエストを受け付けない，リッスンしているぶんは捌く
+
+* Summary
+
+* Summary
+
+- Go 1.8 リリースおめでとうございます 🎉
+- 当初 Revel で実装されていた API を `net/http` ベースで再実装しました
+- 何らかのフレームワークで実装するのもいいと思いますが， `net/http` だけでも十分だよね，と見切りがついた時点で舵を切るのはいいことだと思います
+- `go-server-starter` 便利ですね
+- Go 1.8 Graceful shutdown も簡単に導入できそうな感じです
+- ますます，Go が気になっています．これからも書いていきたいと思います 💪

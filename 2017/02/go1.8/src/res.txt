@@ -1,0 +1,10 @@
+2017/02/16 14:51:14 [INFO] GET /
+2017/02/16 14:51:14 [INFO] GET /
+2017/02/16 14:51:14 [INFO] GET /
+received HUP (num_old_workers=TODO)
+spawning a new worker (num_old_workers=TODO)
+starting new worker 61111
+2017/02/16 14:51:14 [INFO] Use go-gracedown
+2017/02/16 14:51:14 [INFO] GET /
+2017/02/16 14:51:14 [INFO] GET /
+2017/02/16 14:51:14 [INFO] GET /

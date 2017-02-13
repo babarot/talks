@@ -1,0 +1,106 @@
+$ hey -n 10000 -c 100 http://localhost:8000                               54 ⏎   ~
+400 requests done.
+900 requests done.
+1400 requests done.
+1900 requests done.
+2300 requests done.
+2502 requests done.
+2646 requests done.
+2754 requests done.
+2876 requests done.
+2997 requests done.
+3135 requests done.
+3238 requests done.
+3367 requests done.
+3503 requests done.
+3645 requests done.
+3753 requests done.
+3877 requests done.
+3999 requests done.
+4125 requests done.
+4243 requests done.
+4379 requests done.
+4497 requests done.
+4616 requests done.
+4768 requests done.
+4877 requests done.
+4930 requests done.
+5000 requests done.
+5114 requests done.
+5244 requests done.
+5372 requests done.
+5504 requests done.
+5636 requests done.
+5770 requests done.
+5884 requests done.
+5996 requests done.
+6136 requests done.
+6247 requests done.
+6378 requests done.
+6500 requests done.
+6629 requests done.
+6757 requests done.
+6881 requests done.
+6916 requests done.
+7008 requests done.
+7128 requests done.
+7270 requests done.
+7392 requests done.
+7515 requests done.
+7623 requests done.
+7758 requests done.
+7776 requests done.
+7900 requests done.
+8026 requests done.
+8150 requests done.
+8274 requests done.
+8366 requests done.
+8495 requests done.
+8622 requests done.
+8733 requests done.
+8869 requests done.
+8984 requests done.
+9115 requests done.
+9238 requests done.
+9361 requests done.
+9490 requests done.
+9615 requests done.
+9747 requests done.
+9873 requests done.
+All requests done.
+
+Summary:
+  Total:        130.0557 secs
+  Slowest:      0.1105 secs
+  Fastest:      0.1011 secs
+  Average:      0.1046 secs
+  Requests/sec: 18.4536
+
+Status code distribution:
+  [200] 2400 responses
+
+Response time histogram:
+  0.101 [1]     |
+  0.102 [166]   |∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.103 [283]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.104 [437]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.105 [498]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.106 [333]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.107 [453]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.108 [105]   |∎∎∎∎∎∎∎∎
+  0.109 [33]    |∎∎∎
+  0.110 [66]    |∎∎∎∎∎
+  0.111 [25]    |∎∎
+
+Latency distribution:
+  10% in 0.1022 secs
+  25% in 0.1034 secs
+  50% in 0.1044 secs
+  75% in 0.1059 secs
+  90% in 0.1067 secs
+  95% in 0.1079 secs
+  99% in 0.1096 secs
+
+Error distribution:
+  [7582]        Get http://localhost:8000: dial tcp [::1]:8000: getsockopt: connection refused
+  [18]  Get http://localhost:8000: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)

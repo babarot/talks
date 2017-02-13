@@ -1,0 +1,46 @@
+$ hey -n 3000 -c 100 http://localhost:8000                                       ~
+400 requests done.
+900 requests done.
+1400 requests done.
+1900 requests done.
+2417 requests done.
+2549 requests done.
+2663 requests done.
+2786 requests done.
+2903 requests done.
+All requests done.
+
+Summary:
+  Total:        13.6336 secs
+  Slowest:      0.1093 secs
+  Fastest:      0.1004 secs
+  Average:      0.1049 secs
+  Requests/sec: 168.7006
+
+Status code distribution:
+  [200] 2300 responses
+
+Response time histogram:
+  0.100 [1]     |
+  0.101 [104]   |∎∎∎∎∎∎∎∎∎
+  0.102 [74]    |∎∎∎∎∎∎∎
+  0.103 [183]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.104 [356]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.105 [445]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.106 [399]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.107 [373]   |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.108 [150]   |∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.108 [145]   |∎∎∎∎∎∎∎∎∎∎∎∎∎
+  0.109 [70]    |∎∎∎∎∎∎
+
+Latency distribution:
+  10% in 0.1024 secs
+  25% in 0.1037 secs
+  50% in 0.1048 secs
+  75% in 0.1060 secs
+  90% in 0.1074 secs
+  95% in 0.1081 secs
+  99% in 0.1088 secs
+
+Error distribution:
+  [700]        Get http://localhost:8000: dial tcp [::1]:8000: getsockopt: connection refused
