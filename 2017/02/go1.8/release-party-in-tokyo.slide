@@ -1,4 +1,5 @@
-Go graceful shutdown - Examples of introduction to Production
+Hot-deploying in Go
+
 Go 1.8 Release Party in Tokyo
 16 Feb 2017
 Tags: golang, graceful, hot-deploy
@@ -31,7 +32,7 @@ CLI ツールなど．
 
 ブログなども書いてるのでよかったら見てみてください．
 
-* Go graceful shutdown - Examples of introduction to Production
+* Hot-deploying in Go - プロダクションでの実例
 
 * Timeline
 
@@ -43,17 +44,70 @@ CLI ツールなど．
 - ついでに WAF を使わずに `net/http` で書き直す
 - Go 1.8 で Graceful shutdown がサポートされる ([[https://github.com/golang/go/issues/4674][#4674]])
 
-* API Gateway
+* Dolphin
+
+* Dolphin
+
+Dolphin (API Gateway) とは，
+
+- 便宜上，イルカと呼ぶ🐬
+- Revel で書かれていた
+- 別の新卒 (同様に SRE 研修) によってつくられた
+- そのまま引き継ぎ，BASIC 認証機能やクエリのチューニングを加えた
+- そして，デプロイ ... 🚀
+- あたらしい機能 P-R したけど，アレ...
+
+(Revel って Graceful shutdown できるの...?)
+
+* Dolphin
+
+Revel...
+
+- [[https://github.com/revel/revel/pull/690][Support zero downtime restarts #690]]
+- [[https://github.com/revel/revel/pull/765][Revert "Support zero downtime restarts" #765]]
+
+(今となってはできるよう)
+
+* Dolphin
+
+まず，
+
+- メインサービスの API から呼ばれる関係上，ホットデプロイできるようにしたい
+- 要件的に Revel ほど高機能な WAF は必要なかった
+- `net/http` で同機能のモックアップ作ってベンチを取ったら倍になってた
+
+以下のベンチマーク結果: (ローカルマシンで計測)
+
+    $ ab -n 10000 -c 1
+
+.image img/benchmark.png 150 _
+
+あとは，ホットデプロイ対応...
 
 * Hot-deploying
 
+* Hot-deploying
+
+# Hot-deployable services are those which can be added to or removed from the running server.
+# It is the ability to change ON-THE-FLY what's currently deployed without redeploying it.
+
+ホットデプロイとは，
+
+- fmfm
+
 * lestrrat/go-server-starter
+
+* lestrrat/go-server-starter
+
+イルカさん，対応した 🐬
+
+.image img/kazeburo.png 450 _
 
 * Go graceful shutdown
 
-* Finaly,
+* BTW,
 
-このことをエンジニアブログにまとめています．
+ホットデプロイ対応のついでに WAF をやめた話は以下にまとめています．
 
 .image img/blog.png 400 _
 
