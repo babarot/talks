@@ -14,20 +14,19 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello, ")
+	fmt.Fprintln(w, "Hello, world")
 	w.(http.Flusher).Flush()
 	time.Sleep(time.Millisecond * 100)
-	fmt.Fprint(w, "Go 1.8!\n")
 }
 
 func main() {
 	listeners, err := listener.ListenAll()
 	if err != nil && err != listener.ErrNoListeningTarget {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	server := &http.Server{Handler: http.HandlerFunc(handler)}
-
+	// サーバとは別の goroutine で待ち受ける
 	go func() {
 		if err := server.Serve(listeners[0]); err != nil {
 			log.Print(err)
@@ -40,6 +39,6 @@ func main() {
 	<-sigCh
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	if err := server.Shutdown(ctx); err != nil {
-		log.Print(err)
+		panic(err)
 	}
 }
